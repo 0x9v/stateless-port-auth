@@ -17,7 +17,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	_, err = conn.Write([]byte("ana mohamed amine karouach"))
+	_, err = conn.Write([]byte("Hello world"))
 	if err != nil {
 		log.Println("cannot write to localhost")
 	}
