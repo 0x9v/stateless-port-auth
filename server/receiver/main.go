@@ -19,7 +19,7 @@ func startListener(events chan Event, port int) {
 
 	conn, err := net.ListenUDP("udp", &addr)
 	if err != nil {
-		log.Fatal("error port :", port, ":", err)
+		log.Fatal("error on port :", port, ":", err)
 	}
 	defer conn.Close()
 
@@ -30,17 +30,36 @@ func startListener(events chan Event, port int) {
 			log.Println("cannot reading :", err)
 			continue
 		}
+
 		events <- Event{Port: port}
 	}
 }
 
 func main() {
 	state := 0
-	events := make(chan Event)
+	events := make(chan Event, 100)
 
 	go startListener(events, 7000)
 	go startListener(events, 9000)
 	go startListener(events, 8000)
+
+	timer := time.NewTimer(0)
+	timer.Stop()
+	resetTimer := func() {
+		if !timer.Stop() {
+			select {
+			case <-timer.C:
+			default:
+			}
+		}
+		timer.Reset(5 * time.Second)
+	}
+
+	resetAll := func() {
+		state = 0
+		timer.Stop()
+		<-timer.C
+	}
 
 	for {
 		select {
@@ -49,19 +68,26 @@ func main() {
 			case 0:
 				if e.Port == 7000 {
 					state = 1
+					fmt.Println("STATE 1")
+					resetTimer()
 				}
 			case 1:
 				if e.Port == 9000 {
 					state = 2
+					fmt.Println("STATE 2")
+				} else {
+					resetAll()
 				}
 			case 2:
 				if e.Port == 8000 {
 					fmt.Println("ACTION SUCCESS")
-					state = 0
 				}
+				resetAll()
 			}
-		case <-time.After(5 * time.Second):
-			state = 0
+		case <-timer.C:
+			resetAll()
 		}
+
+		time.Sleep(time.Millisecond * 10)
 	}
 }
