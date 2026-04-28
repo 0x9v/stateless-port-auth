@@ -58,7 +58,14 @@ int main(int argc, char *argv[])
 
     target.sin_family = AF_INET;
     target.sin_port = htons(port);
-    target.sin_addr = addr.s_addr;
+    target.sin_addr = addr;
+
+    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if(sock<0)
+    {
+        printf("yeee u got a problem mate");
+        return 1;
+    }
 
     //incomplete code !!!
     return 0;
