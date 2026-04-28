@@ -4,14 +4,21 @@
 #include<arpa/inet.h>
 #include<errno.h>
 #include<string.h>
+#include<unistd.h>
+
+
+//The code needs to be refactored, not ready for production yet !!!
+
 
 int main(int argc, char *argv[])
 {
     char *end_ptr;
     char *ip;
     long port;
+    char *payload;
+    size_t string_size;
 
-    if(argc != 3)
+    if(argc != 4)
     {
         printf("Usage: %s <IP> <Port>\n", argv[0]);
         return 1;
@@ -40,7 +47,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-
+    payload = argv[3];
+    string_size = strlen(payload);
 
     //Converting the ip addr from a string into a machine readable binary form
     struct in_addr addr;
@@ -58,7 +66,7 @@ int main(int argc, char *argv[])
 
     target.sin_family = AF_INET;
     target.sin_port = htons(port);
-    target.sin_addr = addr;
+    target.sin_addr.s_addr = addr.s_addr;
 
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if(sock<0)
@@ -67,6 +75,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    //incomplete code !!!
+    ssize_t sent = sendto(sock, payload, string_size, 0, (struct sockaddr*)&target, sizeof(target));
+    if(sent<0)
+    {
+        printf("uh oh your packet wasn't sent hihi");
+        return 1;
+    }
+
     return 0;
 }
