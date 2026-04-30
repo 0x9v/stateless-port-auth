@@ -1,0 +1,11 @@
+# compiled c binaries
+knock
+*.o
+
+# py cache
+__pycache__/
+*.py[cod]
+
+# testing files
+stateless-port-auth/
+thisisnotatest.py
